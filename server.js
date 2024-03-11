@@ -29,12 +29,24 @@ app.use(
   cors({origin: 'http://localhost:3000'})
 );
 app.use('/read/usernames', addMsgToRequest);
+app.use('/read/username/:name', addMsgToRequest);
 
 app.get('/read/usernames', (req, res) => {
   let usernames = req.users.map(function(user) {
     return {id: user.id, username: user.username};
   });
   res.send(usernames);
+});
+
+app.get("/read/username/:name", (req, res) => {
+  let users = req.users.filter(e => e.username === req.params.name).map(user => {
+    return {id: user.id, username: user.name, email: user.email};
+  })
+  if(users.length === 0){
+    res.send({error: {message: `${req.params.name} not found`}, status: 404});
+    return;
+  }
+  res.send(users);
 });
 
 app.use(express.json());
