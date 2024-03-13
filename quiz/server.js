@@ -4,6 +4,8 @@ const express = require('express');
 const app = express();
 var cors = require('cors');
 const port = 8000;
+const readUser = require("./readUsers");
+const writeUser = require("./writeUsers");
 
 let users;
 fs.readFile(path.resolve(__dirname, '../data/users.json'), function(err, data) {
@@ -28,28 +30,12 @@ const addMsgToRequest = function (req, res, next) {
 app.use(
   cors({origin: 'http://localhost:3000'})
 );
-app.use('/read/usernames', addMsgToRequest);
-
-app.get('/read/usernames', (req, res) => {
-  let usernames = req.users.map(function(user) {
-    return {id: user.id, username: user.username};
-  });
-  res.send(usernames);
-});
+app.use(addMsgToRequest);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/write/adduser', addMsgToRequest);
-
-app.post('/write/adduser', (req, res) => {
-  let newuser = req.body;
-  req.users.push(newuser);
-  fs.writeFile(path.resolve(__dirname, '../data/users.json'), JSON.stringify(req.users), (err) => {
-    if (err) console.log('Failed to write');
-    else console.log('User Saved');
-  });
-  res.send('done');
-})
+app.use("/read", readUser);
+app.use('/write', writeUser);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
